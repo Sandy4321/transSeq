@@ -1,34 +1,33 @@
 from neo4j.v1 import GraphDatabase, basic_auth
+# from neo4j.v1.types import Node, Relationship, Path
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "root"))
-session = driver.session()
 
-query = '''MATCH (cs),(ms), p = shortestPath((cs)-[*]->(ms))
-           where ID(cs)=%s and ID(ms)=%s
-           RETURN p
-        '''
 
-id1 = 4581
-id2 = 9089
+def get_path(session,source,target):
+    query = '''MATCH (cs),(ms), p = shortestPath((cs)-[*]->(ms))
+               where ID(cs)=%s and ID(ms)=%s
+               RETURN p
+            '''
+    query = query % (str(source),str(target))
+    result = session.run(query)
 
-query = query % (str(id1),str(id2))
+    for record in result:
+        segments = record['p']
+        line = []
 
-result = session.run(query)
+        for path in segments:
+            path_str = '(%s,%s,%s)' % (path.start,path.type,path.end)
+            line.append(path_str)
 
-for record in result:
-    print('in first record')
-    print(record)
+        line = ','.join(line)
+        return line
+    return None
 
-records = result.records()
-for record in records:
-    print('in second record')
-    print(record)
+if __name__ == '__main__':
+    driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "root"))
+    session = driver.session()
 
-segments = result['records']['_fields']['segments']
+    id1 = 4581
+    id2 = 9089
 
-for segment in segments:
-    start_id = segment['start']['id']
-    relation = segment['relationship']['type']
-    end_id = segment['end']['id']
-
-    print('(%s,%s,%s)' % (start_id,relation,end_id))
+    print(get_path(session,id1,id2))
