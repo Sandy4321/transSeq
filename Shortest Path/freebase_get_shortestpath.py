@@ -27,6 +27,8 @@ with open('../data/train.txt') as f:
 with open('../data/train_with_path.txt','w') as f:
     for i,line in enumerate(relations):
         source,target,relation = line[0],line[1],line[2]
+        source = name2id[source]
+        target = name2id[target]
 
         path = get_path(session,source,target)
 
