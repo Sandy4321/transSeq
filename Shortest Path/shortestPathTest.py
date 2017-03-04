@@ -14,6 +14,16 @@ id2 = 9089
 query = query % (str(id1),str(id2))
 
 result = session.run(query)
+
+for record in result:
+    print('in first record')
+    print(record)
+
+records = result.records()
+for record in records:
+    print('in second record')
+    print(record)
+
 segments = result['records']['_fields']['segments']
 
 for segment in segments:
