@@ -2,7 +2,6 @@ from neo4j.v1 import GraphDatabase, basic_auth
 # from neo4j.v1.types import Node, Relationship, Path
 
 
-
 def get_path(session,source,target):
     query = '''MATCH (cs),(ms), p = shortestPath((cs)-[*]->(ms))
                where ID(cs)=%s and ID(ms)=%s

@@ -6,8 +6,12 @@ session = driver.session()
 
 def get_path(session,source,target,length):
     query = '''
-                MATCH path =(s:Entity)-[*%d..%d]->(t:Entity) WHERE ID(s)=%s and ID(t)=%s RETURN path LIMIT 1
-            ''' % (length,length,source,target)
+            START s = Node(%s),t=Node(%s)
+            MATCH path =(s:Entity)-[*%d..%d]->(t:Entity)
+            WHERE 2 = size(filter(m in nodes(path) where m=s or m=t))
+            RETURN path LIMIT 1
+            ''' % (source,target,length,length)
+    # print(query)
 
     result = session.run(query)
 
@@ -36,17 +40,17 @@ with open('../data/entity2id.txt') as f:
         line = f.readline()
 
 relations = []
-with open('../data/train.txt') as f:
+with open('../data/train_not_find_path.txt') as f:
     line = f.readline()
     while line:
         line = line.strip()
-        relation = line.split('	')
+        relation = line.split(',')
         relations.append(relation)
         line = f.readline()
 
-with open('../data/train_with_path.txt','w') as f:
+with open('../data/train_with_path_length_3.txt','w') as f:
     noPath = relations
-    for length in range(2,3):
+    for length in range(3,4):
         relations = noPath
         noPath = []
         total = len(relations)
@@ -56,12 +60,15 @@ with open('../data/train_with_path.txt','w') as f:
             source = name2id[source]
             target = name2id[target]
 
-            path = get_path(session,source,target,length)
+            try:
+                path = get_path(session,source,target,length)
+            except:
+                path = None
 
             if path == None:
                 noPath.append(line)
             else:
-                # print('%d times, path is %s' % (i,path))
+                print('%d times, path is %s' % (i,path))
                 f.write(path+'\n')
 
             if i%1000==0:
@@ -69,7 +76,7 @@ with open('../data/train_with_path.txt','w') as f:
 
 
 
-with open('../data/train_not_find_path.txt','w') as f:
+with open('../data/train_length3_not_find_path.txt','w') as f:
 
     for line in noPath:
         write_line = ','.join(line)

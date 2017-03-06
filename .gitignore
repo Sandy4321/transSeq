@@ -6,3 +6,6 @@
 
 # Graph Database
 /graph
+
+# Graph Database Dump
+/graphDump
